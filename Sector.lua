@@ -34,6 +34,9 @@ function Sector:init(sx, sy, sw, sh, sfloor, sceil)
             portal = nil
         }
     }
+
+    self.sfloortexture = love.graphics.newImage("floor_test.png")
+    self.sceiltexture = love.graphics.newImage("test_texture.png")
 end
 
 function Sector:render_row(rx, ry, rz, rot_rad, col_h, fov, scr_x)
@@ -77,9 +80,20 @@ function Sector:render_row(rx, ry, rz, rot_rad, col_h, fov, scr_x)
     -- #######################
 
     local hit_wall_data = self.walls[hit_wall]
+    local screen_dist = 1 -- @TODO incorperate in project or everything will break (and then maybe incorperate more math for FOV)
 
-    local function project(z)
-        return col_h / 2 + (rz - z) / trav_dist
+    local function project(z) -- The key to my SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        return (rz - z) / (trav_dist) + col_h / 2
+    end
+
+    local function unproject_floor(y, z)
+        local origin_centered_ypos = y - col_h / 2
+        local slope = origin_centered_ypos / screen_dist
+
+        -- y = m * x
+        -- x = y / m
+
+        return (rz - z) / slope
     end
 
     local projected_wall_ceiling = project(self.sceil)
@@ -102,51 +116,69 @@ function Sector:render_row(rx, ry, rz, rot_rad, col_h, fov, scr_x)
             col_h, fov, scr_x)
     end
 
+    function draw_scary(y)
+        -- Else, draw a scary pattern!
+        if (scr_x + y) % 2 == 0 then
+            table.insert(column_pixels, { 255, 0, 0 })
+        else
+            table.insert(column_pixels, { 0, 0, 0 })
+        end
+    end
+
+    function render_floorceil_texture(y, z, texture)
+        local ray_floor_percent = (unproject_floor(y, z) / trav_dist)
+        if ray_floor_percent >= 0 and ray_floor_percent <= 1 then
+            local floor_x = math.cos(rot_rad) * (ray_floor_percent * trav_dist) - translated_sector_x
+            local floor_y = math.sin(rot_rad) * (ray_floor_percent * trav_dist) - translated_sector_y
+
+            local pixel_x = floor_x / self.sw
+            local pixel_y = floor_y / self.sh
+
+            if pixel_x >= 0 and pixel_x < 1 and pixel_y >= 0 and pixel_y < 1 then
+                local r, g, b = texture:getData():getPixel(pixel_x * texture:getWidth(), pixel_y * texture:getHeight())
+                table.insert(column_pixels, { r, g, b })
+            else
+                draw_scary(y)
+            end
+        else
+            draw_scary(y)
+        end
+    end
+
     -- @TODO optimize all of this junk!!!
     -- (Draw textures directly to the screen using the GPU instead of generating pixel data ON THE CPU!)
     -- (If not that, at least make sure that portal rendering doesn't render the whole screen, only the part used,
     -- and also make the sector rendering accept the pixel data list as an argument and append to that so that way
     -- we wouldn't need a loop to concat the two arrays!)
-    local r = fov * 2
     for y = 0, col_h, 1 do
-        r = r - fov * 4 / col_h
-        local yscan_slope = math.sin(r) / math.cos(r)
-
-        local wall_percent = math.abs(yscan_slope * trav_dist * 80 - rz) / (self.sceil - self.sfloor)
-
-        if scr_x % 2 == 0 then
-            table.insert(column_pixels, {0, 0, wall_percent > 0 and wall_percent < 1 and 255 or 0})
-        else
-            if y < projected_wall_ceiling then
+        if y < projected_wall_ceiling then
+            if self.sceiltexture ~= nil then
+                render_floorceil_texture(y, self.sceil, self.sceiltexture)
+            else
                 table.insert(column_pixels, self.sceilcol)
-            elseif y < projected_wall_floor then
-                if wall_has_portal and y > projected_neighbor_ceiling and y < projected_neighbor_floor then -- Draw portal
-                    table.insert(column_pixels, portal_pixels[y])
-                else
-                    -- Render wall
-                    if hit_wall_data.texture == nil then -- Use fallback color
-                        table.insert(column_pixels, hit_wall_data.color)
-                    else -- Do the amazing texture rendering
-                        local pixel_x = hit_wall_data.texture:getWidth() * (wall_column / wall_column_size)
-                        local pixel_y = hit_wall_data.texture:getHeight() * ((y - projected_wall_ceiling) / (projected_wall_floor - projected_wall_ceiling))
-    
-                        if pixel_x > 0 and pixel_x < hit_wall_data.texture:getData():getWidth() and pixel_y > 0 and pixel_y < hit_wall_data.texture:getData():getHeight() then
-                            -- If the pixel is valid, render it
-                            local r, g, b = hit_wall_data.texture:getData():getPixel(pixel_x, pixel_y)
-                            table.insert(column_pixels, { r, g, b })
-                        else
-                            -- Else, draw a scary pattern!
-                            if y % 2 == 0 then
-                                table.insert(column_pixels, { 255, 0, 0 })
-                            else
-                                table.insert(column_pixels, { 0, 0, 0 })
-                            end
-                        end
+            end
+        elseif y < projected_wall_floor then
+            if wall_has_portal and y > projected_neighbor_ceiling and y < projected_neighbor_floor then -- Draw portal
+                table.insert(column_pixels, portal_pixels[y])
+            else
+                -- Render wall
+                if hit_wall_data.texture == nil then -- Use fallback color
+                    table.insert(column_pixels, hit_wall_data.color)
+                else -- Do the amazing texture rendering
+                    local pixel_x = hit_wall_data.texture:getWidth() * (wall_column / wall_column_size)
+                    local pixel_y = hit_wall_data.texture:getHeight() * ((y - projected_wall_ceiling) / (projected_wall_floor - projected_wall_ceiling))
+
+                    if pixel_x >= 0 and pixel_x < hit_wall_data.texture:getData():getWidth() and pixel_y >= 0 and pixel_y < hit_wall_data.texture:getData():getHeight() then
+                        -- If the pixel is valid, render it
+                        local r, g, b = hit_wall_data.texture:getData():getPixel(pixel_x, pixel_y)
+                        table.insert(column_pixels, { r, g, b })
+                    else
+                        draw_scary(y)
                     end
                 end
-            else
-                table.insert(column_pixels, { 100, 0, 0 })
             end
+        else
+            render_floorceil_texture(y, self.sfloor, self.sfloortexture)
         end
     end
 
