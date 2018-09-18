@@ -1,7 +1,7 @@
 local Sector = require('Sector')
 
-local mainsec = Sector(0, 0, 4, 2, 0, 100)
-local othersec = Sector(4, 0, 4, 2, -20, 40)
+local mainsec = Sector(0, 0, 4, 2, 0, 300)
+local othersec = Sector(4, 0, 4, 2, -100, 100)
 
 mainsec.walls.A.portal = othersec
 othersec.walls.B.portal = mainsec
@@ -40,6 +40,14 @@ function love.draw()
         py = py - math.sin(pr) / 20
     end
 
+    if love.keyboard.isDown("space") then
+        pz = pz + 5
+    end
+
+    if love.keyboard.isDown("lshift") then
+        pz = pz - 5
+    end
+
     local rot = pr - fov / 2
     for x = 0, sw, 1 do
         local y = 0
@@ -51,4 +59,6 @@ function love.draw()
 
         rot = rot + fov / sw
     end
+
+    love.graphics.print("FPS = "..love.timer.getFPS(), 0, 0)
 end
