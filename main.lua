@@ -2,10 +2,15 @@ local Sector = require('Sector')
 
 local mainsec = Sector(0, 0, 4, 10, 0, 300)
 local othersec = Sector(4, 0, 4, 10, -100, 280)
+
+local othersec2 = Sector(4, 10, 4, 10, -100, 280)
 othersec.sfloortexture = love.graphics.newImage("textures/tracks.png")
+othersec2.sfloortexture = love.graphics.newImage("textures/tracks.png")
 
 mainsec.walls.A.portal = othersec
 othersec.walls.B.portal = mainsec
+othersec.walls.D.portal = othersec2
+othersec2.walls.C.portal = othersec
 
 local px = 1
 local py = 1
