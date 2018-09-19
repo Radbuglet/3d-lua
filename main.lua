@@ -13,7 +13,7 @@ local pz = 15
 local pr = 0
 
 local fov = 0.5235988
-local sw = 100
+local sw = 130
 local sh = 100
 local pixel_mult = 10
 
