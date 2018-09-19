@@ -15,28 +15,28 @@ function Sector:init(sx, sy, sw, sh, sfloor, sceil)
     self.walls = {
         A = {
             color = { math.random() * 255, math.random() * 255, math.random() * 255 },
-            texture = love.graphics.newImage("test_texture.png"),
+            texture = love.graphics.newImage("textures/wall.png"),
             portal = nil
         },
         B = {
             color = { math.random() * 255, math.random() * 255, math.random() * 255 },
-            texture = love.graphics.newImage("test_texture.png"),
+            texture = love.graphics.newImage("textures/wall.png"),
             portal = nil
         },
         C = {
             color = { math.random() * 255, math.random() * 255, math.random() * 255 },
-            texture = love.graphics.newImage("test_texture.png"),
+            texture = love.graphics.newImage("textures/wall.png"),
             portal = nil
         },
         D = {
             color = { math.random() * 255, math.random() * 255, math.random() * 255 },
-            texture = love.graphics.newImage("test_texture.png"),
+            texture = love.graphics.newImage("textures/wall.png"),
             portal = nil
         }
     }
 
-    self.sfloortexture = love.graphics.newImage("floor_test.png")
-    self.sceiltexture = love.graphics.newImage("ceil.png")
+    self.sfloortexture = love.graphics.newImage("textures/concrete.jpg")
+    self.sceiltexture = love.graphics.newImage("textures/ceil.png")
 end
 
 function Sector:render_row(rx, ry, rz, rot_rad, col_h, fov, scr_x)
