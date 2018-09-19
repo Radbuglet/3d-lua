@@ -109,8 +109,8 @@ function Sector:render_row(rx, ry, rz, rot_rad, col_h, fov, scr_x)
     
     if wall_portaled_sector ~= nil then
         wall_has_portal = true
-        projected_neighbor_ceiling = project(wall_portaled_sector.sceil)
-        projected_neighbor_floor = project(wall_portaled_sector.sfloor)
+        projected_neighbor_ceiling = project(wall_portaled_sector.sceil) + 1
+        projected_neighbor_floor = project(wall_portaled_sector.sfloor) - 1
         portal_pixels = wall_portaled_sector:render_row(
             rx, ry, rz, rot_rad,
             col_h, fov, scr_x)
