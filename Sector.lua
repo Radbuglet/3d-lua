@@ -36,7 +36,7 @@ function Sector:init(sx, sy, sw, sh, sfloor, sceil)
     }
 
     self.sfloortexture = love.graphics.newImage("floor_test.png")
-    self.sceiltexture = love.graphics.newImage("test_texture.png")
+    self.sceiltexture = love.graphics.newImage("ceil.png")
 end
 
 function Sector:render_row(rx, ry, rz, rot_rad, col_h, fov, scr_x)

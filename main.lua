@@ -1,7 +1,8 @@
 local Sector = require('Sector')
 
-local mainsec = Sector(0, 0, 4, 2, 0, 300)
-local othersec = Sector(4, 0, 4, 2, -100, 100)
+local mainsec = Sector(0, 0, 4, 10, 0, 300)
+local othersec = Sector(4, 0, 4, 10, -100, 280)
+othersec.sfloortexture = love.graphics.newImage("tracks.png")
 
 mainsec.walls.A.portal = othersec
 othersec.walls.B.portal = mainsec
@@ -14,7 +15,7 @@ local pr = 0
 local fov = 0.5235988
 local sw = 100
 local sh = 100
-local pixel_mult = 5
+local pixel_mult = 10
 
 function love.load()
     love.window.setTitle("Rad's Game")
